@@ -1,19 +1,67 @@
-import React from 'react';
-import { Search, X, Check, Send, Paperclip, Smile } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { Search, X, Check,LogOut, Send, Paperclip,Mail,Phone,Edit, Smile } from 'lucide-react';
+import { Link,useNavigate } from "react-router-dom";
+import axios from 'axios';
+import APIURL from './path';
 
 const HomePage = () => {
+  const[profil,setProfile]=useState(false)
+  const [formData, setFormData] = useState([]);
+  const navigate=useNavigate()
+
+  const token=localStorage.getItem("token")
+  const userId=localStorage.getItem("userId")
+  console.log(token);
+  
+  function viweprofile() {
+    setProfile(!profil)
+  } 
+
+  async function fetchuser() {
+    try {
+        const res=await axios.post(APIURL+"/fetchuser",{userId})
+        console.log(res);
+        if (res.status=200) {
+          const{user}=res.data
+        setFormData(user)
+        console.log(user);
+        
+        console.log("form data is "+ formData);
+        
+      }
+      
+    } catch (error) {
+      console.log(error);
+    }
+  }
+  
+  useEffect(()=>{
+  fetchuser()
+},[token,userId])
+
+
+
+
+function logOutuser() {
+  localStorage.removeItem("token")
+  localStorage.removeItem("userId")
+  // window.location.reload()
+  navigate("/login")
+
+}
+if (!token) {
+  navigate("/login")
+}
   return (
     <div className="flex h-screen bg-gray-100">
-      {/* Left Sidebar */}
       <div className="w-80 bg-white border-r border-gray-200">
-        {/* Sidebar Header */}
         <div className="flex items-center p-4 border-b border-gray-200">
-          <button className="mr-4">
-            <div className="w-6 h-0.5 bg-gray-700 mb-1"></div>
-            <div className="w-6 h-0.5 bg-gray-700 mb-1"></div>
-            <div className="w-6 h-0.5 bg-gray-700"></div>
-          </button>
-          
+
+          <div className='w-13 h-13 rounded-full' onClick={viweprofile}>
+            {profil?<p>X</p>:
+            <img className='w-full h-full object-cover rounded-full' src={formData.profile} alt="" />
+            }
+          </div>
           <div className="relative flex-1">
             <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
               <Search className="w-4 h-4 text-gray-400" />
@@ -28,7 +76,70 @@ const HomePage = () => {
         
         {/* Conversation List */}
         <div className="overflow-y-auto h-full">
-          {/* Conversation Item 1 */}
+        {profil? 
+        <div className="flex items-center mt-30 h-160 p-3 border-b border-gray-100 bg-white hover:bg-gray-50">
+  
+        <div className="flex items-center h-160 p-6 border-b border-gray-100 bg-white hover:bg-gray-50 space-x-6">
+      
+          <div className="w-64 bg-white border-r border-gray-200 overflow-hidden h-screen p-4">
+            {/* Profile Image */}
+            <div className="flex flex-col items-center mb-6">
+              <div className="w-32 h-32 rounded-full border-4 border-gray-100 overflow-hidden mb-4">
+                <img 
+                  src={formData.profile || '/default-avatar.png'} 
+                  alt="Profile" 
+                  className="w-full h-full object-cover"
+                />
+              </div> 
+              {/* Username */}
+              <h2 className="text-xl font-semibold text-gray-800 mb-2">
+                {formData.username || 'Username'}
+              </h2>
+            </div> 
+            {/* Contact Information */}
+            <div className="space-y-4">
+              {/* Email */}
+              <div className="flex items-center space-x-3">
+                <Mail className="h-5 w-5 text-gray-500" />
+                <span className="text-gray-600 truncate">
+                  {formData.email || 'email@example.com'}
+                </span>
+              </div> 
+              {/* Phone */}
+              <div className="flex items-center space-x-3">
+                <Phone className="h-5 w-5 text-gray-500" />
+                <span className="text-gray-600">
+                  {formData.phone || '+1 234 567 8900'}
+                </span>
+              </div>
+            </div>
+      
+            {/* Edit Profile Button */}
+            <div className="mt-6">
+              <button className="w-full bg-indigo-50 text-indigo-600 hover:bg-indigo-100 px-4 py-2 rounded-lg flex items-center justify-center space-x-2 transition-colors">
+                <Edit className="h-4 w-4" />
+                <span className="text-sm font-medium">Edit Profile</span>
+              </button>
+            </div>
+            
+            {/* Logout Button */}
+            <div className="mt-4">
+              <button 
+                onClick={() => logOutuser()}
+                className="w-full bg-red-50 text-red-600 hover:bg-red-100 px-4 py-2 rounded-lg flex items-center justify-center space-x-2 transition-colors"
+              >
+                <LogOut className="h-4 w-4" />
+                <span className="text-sm font-medium">Log Out</span>
+              </button>
+            </div>
+      
+          </div>
+        </div>
+      </div>
+          :
+          <div>
+
+           {/* Conversation Item 1 */}
           <div className="flex items-center p-3 border-b border-gray-100 bg-white hover:bg-gray-50">
             <div className="relative mr-3">
               <img src="/api/placeholder/40/40" alt="Bill Kuphal" className="w-10 h-10 rounded-full" />
@@ -136,8 +247,10 @@ const HomePage = () => {
               <p className="text-sm text-gray-500 truncate">You: Ok</p>
             </div>
           </div>
+
+          </div>}
         </div>
-      </div>
+      </div> 
       
       {/* Chat Area */}
       <div className="flex-1 flex flex-col">

@@ -6,5 +6,6 @@ import * as rh from "./requesthandler/user.request.js"
 const router=Router();
 router.route("/adduser").post(rh.adduser)
 router.route("/login").post(rh.logine)
+router.route("/fetchuser").post(rh.fetchuser)
 
 export default router

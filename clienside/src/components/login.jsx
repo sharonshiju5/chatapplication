@@ -50,6 +50,7 @@ const Login = () => {
     try {
       const res=await axios.post(APIURL+"/login",formData)
       console.log(res);
+      const{token,userId}=res.data
       if (res.status=200) {
         const{msg}=res.data
         toast.success(msg, {
@@ -63,6 +64,8 @@ const Login = () => {
           theme: "light",
         });
         setTimeout(() => {
+          localStorage.setItem("token",token)
+          localStorage.setItem("userId",userId)
           navigate("/")
         }, 1000);
       }

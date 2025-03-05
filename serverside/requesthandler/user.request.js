@@ -70,3 +70,20 @@ export async function logine(req,res){
 
       }
 }
+
+
+export async function fetchuser(req,res) {
+  try {
+    const{userId}=req.body
+    console.log("user id is " +userId);
+
+    const user=await userSchema.findById({_id:userId})
+    console.log(user);
+    
+    res.status(200).send({msg:"userfound",user})
+    
+  } catch (error) {
+    console.error("Login Error:", error);
+    return res.status(500).json({ msg: "Internal Server Error", error: error.message });
+  }
+}

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Eye, EyeOff,Phone, Lock, Mail, User } from 'lucide-react';
+import { Eye, EyeOff,Phone, Lock,Camera, Mail, User } from 'lucide-react';
 import axios from 'axios';
 import APIURL from './path';
 import { Link,useNavigate } from "react-router-dom";
@@ -9,10 +9,11 @@ const Register = () => {
   const navigate=useNavigate()
 
   const [showPassword, setShowPassword] = useState(false);
+  const [imagePreviews, setImagePreviews] = useState('');
   const [formData, setFormData] = useState({
     username: '',
     phone:"",
-    profile:[],
+    profile:'',
     email: '',
     password: '',
     cpassword: ''
@@ -27,46 +28,13 @@ const Register = () => {
     }));
   };
 
-  const validateRegisterForm = () => {
-    const newErrors = {};
-
-    // Username validation
-    if (!formData.username) {
-      newErrors.username = 'Username is required';
-    } else if (formData.username.length < 3) {
-      newErrors.username = 'Username must be at least 3 characters';
-    }
-
-    // Email validation
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!formData.email) {
-      newErrors.email = 'Email is required';
-    } else if (!emailRegex.test(formData.email)) {
-      newErrors.email = 'Invalid email format';
-    }
-
-    // Password validation
-    if (!formData.password) {
-      newErrors.password = 'Password is required';
-    } else if (formData.password.length < 8) {
-      newErrors.password = 'Password must be at least 8 characters';
-    }
-
-    // Confirm password validation
-    if (formData.password !== formData.cpassword) {
-      newErrors.cpassword = 'Passwords do not match';
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
+ 
 
   const handleRegister = async(e) => {
     e.preventDefault();
     console.log(formData);
     
     try {
-
       const res=await axios.post(APIURL+"/adduser",formData)
       console.log(res);
       if (res.status=201) {
@@ -102,46 +70,65 @@ const Register = () => {
       
     }
   };
+
   const handleImageUpload = (e) => {
-    const files = Array.from(e.target.files);
+    const file = e.target.files[0];
+    if (file) {
+      // Create a preview URL
+      const previewUrl = URL.createObjectURL(file);
+      setImagePreviews(previewUrl);
 
-    const previews = files.map(file => URL.createObjectURL(file));
-    setImagePreviews(prev => [...prev, ...previews]);
+      // Convert file to base64
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onloadend = () => {
+        setFormData(prev => ({ 
+          ...prev, 
+          profile: reader.result 
+        }));
+      };
+    }
+  };
 
-    const imageUrls = [];
-    files.forEach(file => {
-        const reader = new FileReader();
-        reader.readAsDataURL(file); 
-        reader.onloadend = () => {
-            imageUrls.push(reader.result);
-            setFormData(prev => ({ ...prev, profile: [...prev.profile, reader.result] }));
-        };
-    });
-};
   return (
-    <div className="min-h-screen bg-gray-100 flex items-center justify-center px-4">
+     <div className="min-h-screen bg-gray-100 flex items-center justify-center px-4">
       <div className="bg-white shadow-md rounded-lg w-full max-w-md p-8">
         <h2 className="text-2xl font-bold text-center mb-6">
           Create an Account
         </h2>
         
         <form onSubmit={handleRegister} className="space-y-4">
-          <div>
-            <label  className="block text-sm font-medium text-gray-700">
-                profile
-              </label>
-              <div className="relative mt-1">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  {/* <Phone className="h-5 w-5 text-gray-400" /> */}
-                </div>
+          <div className="flex flex-col items-center justify-center w-full">
+            <div className="relative w-32 h-32">
+              {/* Circular image container */}
+              <div className="w-full h-full rounded-full overflow-hidden border-4 border-white shadow-md">
+                {formData.profile ? (
+                  <img 
+                    src={formData.profile} 
+                    alt="Profile" 
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <div className="w-full h-full bg-gray-200 flex items-center justify-center">
+                    <User className="w-16 h-16 text-gray-500" />
+                  </div>
+                )}
+              </div>
+              
+              {/* Camera icon / Upload button */}
+              <label 
+                htmlFor="profile-upload" 
+                className="absolute bottom-0 right-0 bg-green-500 rounded-full w-10 h-10 flex items-center justify-center cursor-pointer hover:bg-green-600 transition-colors"
+              >
                 <input
+                  id="profile-upload"
                   type="file"
                   name="profile"
-                  placeholder="+1 234 567 8900"
                   onChange={handleImageUpload}
-                  className={`pl-10 block w-full rounded-md border shadow-sm py-2 focus:border-indigo-500 focus:ring-indigo-500`}
+                  className="hidden"
                 />
-
+                <Camera className="w-6 h-6 text-white" />
+              </label>
             </div>
           </div>
           <div>
@@ -293,4 +280,4 @@ const Register = () => {
   );
 };
 
-export default Register 
+export default Register

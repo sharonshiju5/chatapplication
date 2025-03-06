@@ -6,6 +6,7 @@ const userSchema=new mongoose.Schema({
     email:{type:String},
     password:{type:String},
     profile:{ type: [String], required: true },
+    chatedaccount: { type: [String] },
 
 })
 

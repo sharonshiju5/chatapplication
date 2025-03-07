@@ -90,17 +90,18 @@ export async function fetchuser(req,res) {
 
 export async function viewusers(req, res) {
   try {
-    const {search}=req.body;
+    const {search,userId}=req.body;
 
     console.log(search);
 
     let contacts;
 
     if (!search) {
-      contacts = await userSchema.find();
+      contacts = await userSchema.find({ _id: { $ne: userId } });
     } else {
       contacts = await userSchema.find({
-        username: { $regex: search, $options: "i" }
+        _id: { $ne: userId },
+        username: { $regex: search, $options: "i" },
       });
     }
 
@@ -114,7 +115,7 @@ export async function viewusers(req, res) {
 
 export async function chattedaccount(req,res) {
   try {
-    const{userId,_id}=req.body
+    const{userId,_id,search}=req.body
     await userSchema.findByIdAndUpdate(_id, { $addToSet: { chatedaccount: userId } });
     await userSchema.findByIdAndUpdate(userId, { $addToSet: { chatedaccount: _id } });
 
@@ -127,9 +128,25 @@ export async function chattedaccount(req,res) {
 
 export async function fetchedchattedaccount(req,res) {
   try {
-    const{userId}=req.body
-    const chats= await userSchema.find({ chatedaccount: { $in: [userId] } });
-    return res.status(200).send({ msg: "fetched chats" ,chats});
+    const { search, userId } = req.body;
+
+let chats;
+
+if (!search) {
+  chats = await userSchema.find({
+    chatedaccount: { $in: [userId] }, // Fetch users who have chatted with userId
+    _id: { $ne: userId } // Exclude current user
+  });
+} else {
+  chats = await userSchema.find({
+    chatedaccount: { $in: [userId] }, // Fetch users who have chatted with userId
+    _id: { $ne: userId }, // Exclude current user
+    username: { $regex: search, $options: "i" } // Case-insensitive search
+  });
+}
+
+return res.status(200).send({ msg: "Fetched chats", chats });
+
     
   } catch (error) {
     console.log(error);

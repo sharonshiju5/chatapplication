@@ -7,10 +7,11 @@ const Newcontact = () => {
     const[contact,setcontact]=useState([])
 
     const[search,setsearch]=useState("")
+    const userId=localStorage.getItem("userId")
 
     async function viewusers() {
         try {
-          const res=await axios.post(APIURL+"/viewusers",{search})
+          const res=await axios.post(APIURL+"/viewusers",{search,userId})
         //   console.log(res);
           if (res.status=200) {
             const{contacts}=res.data
@@ -26,7 +27,6 @@ const Newcontact = () => {
     },[search])
     console.log(contact);
     console.log(search);
-    const userId=localStorage.getItem("userId")
     async function addchattedaccounts(_id) {
         try {
             console.log(_id);

@@ -6,6 +6,7 @@ import APIURL from './path';
 import Newcontact from './newcontaact';
 import { motion } from "framer-motion";
 
+
 const HomePage = () => {
   const[profil,setProfile]=useState(false)
   const[contact,showcontact]=useState(false)
@@ -302,21 +303,57 @@ console.log(chats);
         <div className="flex-1 overflow-y-auto p-4">
           {/* Your messages would go here */}
           {chats?chats.map((chats,index)=>(
-
-            <div className="flex justify-end mb-4">
-            <div className="bg-blue-100 rounded-lg p-3 mb-1 max-w-xs text-right">
-              <p className="text-sm">{chats.message}</p>
+            chats.from==userId?
+            <motion.div
+            key={index}
+            className={`chat-message `}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3 }}
+          >
+              <div  className="flex justify-end mb-4">
+                <div className="mr-2 flex-shrink-0">
+                  <img 
+                  src={chater ? chater.profile : "/api/placeholder/40/40"} 
+                  alt="Bill" className="w-8 h-8 rounded-full" />
+                </div>
+                <div className="flex flex-col">
+                  <div className="bg-gray-200 rounded-lg p-3 mb-1 max-w-xs">
+                    <p className="text-sm">{chats.message}</p>
+                  </div>
+                  <span className="text-xs text-gray-500">2:14 PM</span>
+                </div>
+              </div>
+            </motion.div>
+          :
+          <motion.div
+          key={index}
+          className={`chat-message `}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3 }}
+        >
+            <div  className="flex mb-4">
+              <div className="mr-2 flex-shrink-0">
+                <img 
+                src={chater ? chater.profile : "/api/placeholder/40/40"} 
+                alt="Bill" className="w-8 h-8 rounded-full" />
+              </div>
+              <div className="flex flex-col">
+                <div className="bg-blue-200 rounded-lg p-3 mb-1 max-w-xs">
+                  <p className="text-sm">{chats.message}</p>
+                </div>
+                <span className="text-xs text-gray-500">2:14 PM</span>
+              </div>
             </div>
-            <div className="ml-2 flex-shrink-0">
-              <Check className="w-4 h-4 text-blue-500" />
-            </div>
-          </div>
+            </motion.div>
           )):""}
 
         </div>
 
         {/* Input section - fixed at bottom */}
         <div className="border-t border-gray-200 p-3 bg-white">
+          {_id?
           <div className="flex items-center">
             <button className="p-2 text-gray-400 hover:text-gray-600">
               <Paperclip className="w-5 h-5" />
@@ -335,6 +372,7 @@ console.log(chats);
               <Send className="w-5 h-5" />
             </button>
           </div>
+            :""}
         </div>
       </div>
     }

@@ -14,9 +14,12 @@ let socket;
 const HomePage = () => {
   // Existing state variables
   const [profil, setProfile] = useState(false);
+  const [showedit, setShowedit] = useState(false);
   const [contact, showcontact] = useState(false);
-  const [formData, setFormData] = useState([]);
-  const [accounts, setaccounts] = useState([]);
+  const [formData, setFormData] = useState({
+    username: '',
+    phone:"",
+  });  const [accounts, setaccounts] = useState([]);
   const [message, setmessage] = useState("");
   const [_id, setid] = useState("");
   const [chater, setchatter] = useState();
@@ -98,6 +101,20 @@ const HomePage = () => {
   function viweprofile() {
     setProfile(!profil);
   }
+
+  async function saveChanges(_id) {
+    try {
+      const res = await axios.post(APIURL + "/editeuser", { _id ,formData});
+      // console.log(formData);
+      // console.log(_id);
+      if (res.status=201) {
+        setShowedit(false)
+      }
+    } catch (error) {
+     console.log(error);
+    }
+  }
+
 
   // Fetch user data
   async function fetchuser() {
@@ -228,7 +245,7 @@ const HomePage = () => {
       chatwith();
     }
   };
-console.log(search);
+// console.log(formData);
 
   return (
     <div className="flex h-screen overflow-hidden bg-gray-100">
@@ -269,34 +286,66 @@ console.log(search);
                     />
                   </div> 
                   {/* Username */}
+                  {showedit?
+                    <input type="text" name="username" placeholder="Username"
+                    onChange={(e) => setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }))} value={formData.username || ""} 
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-50 focus:border-indigo-500 transition-all text-gray-800 placeholder-gray-400"/>
+                  :
                   <h2 className="text-xl font-semibold text-gray-800 mb-2">
                     {formData.username || 'Username'}
                   </h2>
+                  }
                 </div> 
                 {/* Contact Information */}
                 <div className="space-y-4">
                   {/* Email */}
                   <div className="flex items-center space-x-3">
                     <Mail className="h-5 w-5 text-gray-500" />
-                    <span className="text-gray-600 truncate">
-                      {formData.email || 'email@example.com'}
-                    </span>
+                    {showedit ? (
+                      <div className="flex flex-col">
+                        <span className="text-gray-800 font-medium truncate">
+                          {formData.email || 'email@example.com'}
+                        </span>
+                        <p className="text-xs text-red-500 italic mt-1">Cannot change email</p>
+                      </div>
+                      ) : (
+                      <span className="text-gray-700 font-medium truncate">
+                        {formData.email || 'email@example.com'}
+                      </span>
+                    )}
                   </div> 
                   {/* Phone */}
-                  <div className="flex items-center space-x-3">
-                    <Phone className="h-5 w-5 text-gray-500" />
-                    <span className="text-gray-600">
-                      {formData.phone || '+1 234 567 8900'}
-                    </span>
-                  </div>
+                  {showedit?
+                    <input type="text" name="phone" placeholder="phone"
+                    onChange={(e) => setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }))} value={formData.phone || ""} 
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-50 focus:border-indigo-500 transition-all text-gray-800 placeholder-gray-400"/>
+                  :
+                    <div className="flex items-center space-x-3">
+                      <Phone className="h-5 w-5 text-gray-500" />
+                      <span className="text-gray-600">
+                        {formData.phone || '+1 234 567 8900'}
+                      </span>
+                    </div>
+                  }
                 </div>
           
                 {/* Edit Profile Button */}
                 <div className="mt-6">
-                  <button className="w-full bg-indigo-50 text-indigo-600 hover:bg-indigo-100 px-4 py-2 rounded-lg flex items-center justify-center space-x-2 transition-colors">
-                    <Edit className="h-4 w-4" />
-                    <span className="text-sm font-medium">Edit Profile</span>
-                  </button>
+                  {showedit?
+                    <button 
+                    onClick={() => saveChanges()} 
+                      className="w-full bg-green-600 text-white hover:bg-green-700 px-4 py-2 rounded-lg flex items-center justify-center space-x-2 transition-colors shadow-sm">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                      </svg>
+                      <span className="text-sm font-medium">Save Profile</span>
+                    </button>
+                    :
+                    <button onClick={()=>setShowedit(true)} className="w-full bg-indigo-50 text-indigo-600 hover:bg-indigo-100 px-4 py-2 rounded-lg flex items-center justify-center space-x-2 transition-colors">
+                      <Edit className="h-4 w-4" />
+                      <span className="text-sm font-medium">Edit Profile</span>
+                    </button>
+                  }
                 </div>
                 
                 {/* Logout Button */}
@@ -434,7 +483,7 @@ console.log(search);
             
             {/* Messages area - scrollable */}
             <div className="flex-1 overflow-y-auto p-4">
-              {chats && chats.map((chat, index) => (
+              { chats && chats.map((chat, index) => (
                 chat.from === userId ? (
                   <motion.div
                     key={index}
@@ -449,8 +498,8 @@ console.log(search);
                           <p className="text-sm">{chat.message}</p>
                         </div>
                         <span className="text-xs text-gray-500">
-                          {new Date(chat.timestamp || Date.now()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                        </span>
+                        {new Date(chat.Date).toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' })}<br></br>
+                        {new Date(chat.Date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}                        </span>
                       </div>
                       <div className="ml-2 flex-shrink-0">
                         <img 
@@ -482,7 +531,8 @@ console.log(search);
                           <p className="text-sm">{chat.message}</p>
                         </div>
                         <span className="text-xs text-gray-500">
-                          {new Date(chat.timestamp || Date.now()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                        {new Date(chat.Date).toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' })}<br></br>
+                        {new Date(chat.Date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                         </span>
                       </div>
                     </div>

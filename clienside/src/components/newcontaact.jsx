@@ -32,6 +32,7 @@ const Newcontact = () => {
             console.log(_id);
           const res=await axios.post(APIURL+"/chattedaccount",{userId,_id})
             // console.log(res);
+            window.location.reload()
             
         } catch (error) {
             

@@ -8,6 +8,7 @@ const router=Router();
 
 router.route("/adduser").post(rh.adduser)
 router.route("/login").post(rh.logine)
+router.route("/editeuser").post(rh.editeuser)
 router.route("/fetchuser").post(rh.fetchuser)
 router.route("/viewusers").post(rh.viewusers)
 router.route("/chattedaccount").post(rh.chattedaccount)

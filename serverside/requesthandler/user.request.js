@@ -113,6 +113,19 @@ export async function viewusers(req, res) {
 }
 
 
+export async function editeuser(req,res) {
+  try {
+    const {formData}=req.body
+    const{_id,username,phone}=formData
+    console.log(phone);
+    await userSchema.findByIdAndUpdate(_id,{username,phone})
+    return res.status(201).send({ msg: "user updated" });
+
+  } catch (error) {
+    console.log(error);
+  }
+}
+
 export async function chattedaccount(req,res) {
   try {
     const{userId,_id,search}=req.body

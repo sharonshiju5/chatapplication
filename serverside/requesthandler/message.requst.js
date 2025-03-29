@@ -11,7 +11,7 @@ export async function addmsg(req,res) {
             to:_id,
             images,
             message,
-            Date: _id, // Default to the current timestamp if Date is not provided
+            Date: _id, 
         })
 
         res.status(201).send({msg:"message addded"})
@@ -36,3 +36,4 @@ export async function fetchmessage(req,res) {
         console.log(error);
     }
 }
+

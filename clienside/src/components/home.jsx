@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import { Search, X, Check, LogOut, Send, Paperclip, Mail, Phone, Edit, Smile } from 'lucide-react';
 import { Link, useNavigate } from "react-router-dom";
 import axios from 'axios';
-import { io } from "socket.io-client"; // Import Socket.IO client
+import { io } from "socket.io-client"; 
 import APIURL from './path';
 import Newcontact from './newcontaact';
 import { motion } from "framer-motion";
@@ -92,11 +92,7 @@ const HomePage = () => {
     }
   }, [userId]);
 
-  // Scroll to bottom when messages change
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [chats]);
-
+  
   // Profile view toggle
   function viweprofile() {
     setProfile(!profil);
@@ -236,7 +232,7 @@ const HomePage = () => {
     if (_id) {
       fetchchats();
     }
-  }, [_id]);
+  }, [_id,chats]);
 
   // Handle enter key to send message
   const handleKeyPress = (e) => {
@@ -253,11 +249,16 @@ const HomePage = () => {
       <div className="w-80 flex flex-col bg-white border-r border-gray-200">
         {/* Header */}
         <div className="flex items-center p-4 border-b border-gray-200">
+            {formData?.profile ? (
           <div className='w-10 h-10 rounded-full mr-3' onClick={viweprofile}>
-            {profil ? <p>X</p> :
               <img className='w-full h-full object-cover rounded-full' src={formData.profile} alt="" />
-            }
           </div>
+            )
+             : (
+              <div className='w-10 h-10 rounded-full mr-3'>
+              <img className='w-full h-full object-cover rounded-full' src="https://cdn-icons-png.flaticon.com/128/9408/9408175.png" alt="" />
+          </div>
+            )}
           <div className="relative flex-1">
             <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
               <Search className="w-4 h-4 text-gray-400" />
@@ -498,8 +499,9 @@ const HomePage = () => {
                           <p className="text-sm">{chat.message}</p>
                         </div>
                         <span className="text-xs text-gray-500">
-                        {new Date(chat.Date).toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' })}<br></br>
-                        {new Date(chat.Date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}                        </span>
+                          {new Date(chat.Date).toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' })}<br></br>
+                          {new Date(chat.Date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                        </span>
                       </div>
                       <div className="ml-2 flex-shrink-0">
                         <img 
@@ -531,8 +533,8 @@ const HomePage = () => {
                           <p className="text-sm">{chat.message}</p>
                         </div>
                         <span className="text-xs text-gray-500">
-                        {new Date(chat.Date).toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' })}<br></br>
-                        {new Date(chat.Date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                          {new Date(chat.Date).toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' })}<br></br>
+                          {new Date(chat.Date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                         </span>
                       </div>
                     </div>

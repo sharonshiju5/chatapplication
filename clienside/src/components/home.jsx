@@ -585,7 +585,7 @@ const HomePage = () => {
                   </button>
                   <button 
                     onClick={chatwith} 
-                    className="p-2 ml-1 bg-blue-500 rounded-full text-white hover:bg-blue-600"
+                    className="p-2 -ml-50 bg-blue-500 rounded-full text-white hover:bg-blue-600"
                     disabled={!message.trim()}
                   >
                     <Send className="w-5 h-5" />

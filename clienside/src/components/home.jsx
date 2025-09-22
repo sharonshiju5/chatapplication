@@ -251,7 +251,7 @@ const HomePage = () => {
         <div className="flex items-center p-4 border-b border-gray-200">
             {formData?.profile ? (
           <div className='w-10 h-10 rounded-full mr-3' onClick={viweprofile}>
-              <img className='w-full h-full object-cover rounded-full' src={formData.profile} alt="" />
+              <img className='w-full h-full object-cover rounded-full' src={formData?.profile} alt="" />
           </div>
             )
              : (
@@ -281,7 +281,7 @@ const HomePage = () => {
                 <div className="flex flex-col items-center mb-6">
                   <div className="w-32 h-32 rounded-full border-4 border-gray-100 overflow-hidden mb-4">
                     <img 
-                      src={formData.profile || '/default-avatar.png'} 
+                      src={formData?.profile || '/default-avatar.png'} 
                       alt="Profile" 
                       className="w-full h-full object-cover"
                     />

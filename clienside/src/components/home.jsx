@@ -366,7 +366,7 @@ const HomePage = () => {
               <div className='fixed top-135 left-15 z-10 flex justify-center py-2'>
                 <img 
                   onClick={() => showcontact(true)} 
-                  className='h-10 ml-50' 
+                  className='h-10 ml-0 md:ml-40  ' 
                   src="https://cdn-icons-png.flaticon.com/128/16028/16028253.png" 
                   alt="New Message" 
                 />

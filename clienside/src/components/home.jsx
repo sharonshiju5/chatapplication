@@ -246,7 +246,7 @@ const HomePage = () => {
   return (
     <div className="flex h-screen overflow-hidden bg-gray-100">
       {/* Sidebar/Contact List */}
-      <div className="w-80 flex flex-col bg-white border-r border-gray-200">
+      <div className="w-25  flex flex-col bg-white border-r border-gray-200">
         {/* Header */}
         <div className="flex items-center p-4 border-b border-gray-200">
             {formData?.profile ? (

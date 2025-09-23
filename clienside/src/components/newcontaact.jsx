@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Search, Users, ChevronRight } from 'lucide-react';
+import { motion } from 'framer-motion';
 import axios from 'axios';
 import APIURL from './path';
 
@@ -40,66 +41,145 @@ const Newcontact = () => {
     }
 
   return (
-    <div className="flex flex-col h-screen bg-white text-gray-800">
+    <motion.div 
+      className="flex flex-col h-screen glass-effect text-gray-800 custom-scrollbar"
+      initial={{ opacity: 0, x: 20 }}
+      animate={{ opacity: 1, x: 0 }}
+      transition={{ duration: 0.3 }}
+    >
       {/* Title */}
-      <div className="p-4 font-semibold text-xl text-gray-800">
+      <motion.div 
+        className="p-2 sm:p-4 font-semibold text-lg sm:text-xl text-white gradient-primary rounded-t-2xl"
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3, delay: 0.1 }}
+      >
         New chat
-      </div>
+      </motion.div>
 
       {/* Search Bar */}
-      <div className="px-4 pb-3">
-        <div className="bg-gray-100 rounded-lg flex items-center p-2">
-          <Search size={20} className="text-gray-500 ml-2" />
+      <motion.div 
+        className="px-2 sm:px-4 pb-2 sm:pb-3"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3, delay: 0.2 }}
+      >
+        <div className="glass-effect rounded-xl flex items-center p-2 sm:p-3 border border-white/20">
+          <Search size={16} className="sm:w-5 sm:h-5 text-gray-600 ml-1 sm:ml-2" />
           <input 
             type="text" 
             placeholder="Search name or number" 
             onChange={(e)=>setsearch(e.target.value)}
-            className="bg-transparent border-none outline-none px-3 py-1 text-gray-800 w-full"
+            className="chat-input bg-transparent border-none outline-none px-2 sm:px-3 py-1 text-xs sm:text-sm text-gray-800 w-full placeholder-gray-500"
           />
-          <button className="text-gray-500 p-1">
+          <motion.button 
+            className="text-gray-600 p-1 hover:text-gray-800 transition-colors"
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.9 }}
+          >
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <rect x="3" y="3" width="7" height="7"></rect>
               <rect x="14" y="3" width="7" height="7"></rect>
               <rect x="14" y="14" width="7" height="7"></rect>
               <rect x="3" y="14" width="7" height="7"></rect>
             </svg>
-          </button>
+          </motion.button>
         </div>
-        <div className="border-b border-green-500 mt-1"></div>
-      </div>
+        <motion.div 
+          className="border-b-2 gradient-primary mt-2 rounded-full"
+          initial={{ width: 0 }}
+          animate={{ width: '100%' }}
+          transition={{ duration: 0.5, delay: 0.3 }}
+        ></motion.div>
+      </motion.div>
 
       {/* New Group */}
-      <div className="flex items-center p-3 hover:bg-gray-100 cursor-pointer">
-        <div className="w-12 h-12 bg-teal-500 rounded-full flex items-center justify-center mr-3">
-          <Users size={24} className="text-white" />
-        </div>
-        <span className="text-gray-800 font-medium">New group</span>
-      </div>
+      <motion.div 
+        className="flex items-center p-2 sm:p-3 mx-1 sm:mx-2 rounded-xl glass-effect hover:bg-white/20 cursor-pointer transition-all duration-300 sidebar-item"
+        initial={{ opacity: 0, x: -20 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ duration: 0.3, delay: 0.3 }}
+        whileHover={{ scale: 1.02, x: 5 }}
+        whileTap={{ scale: 0.98 }}
+      >
+        <motion.div 
+          className="w-10 sm:w-12 h-10 sm:h-12 gradient-success rounded-full flex items-center justify-center mr-2 sm:mr-3 shadow-lg"
+          whileHover={{ rotate: 5 }}
+          transition={{ type: "spring", stiffness: 400, damping: 10 }}
+        >
+          <Users size={20} className="sm:w-6 sm:h-6 text-white" />
+        </motion.div>
+        <span className="text-sm sm:text-base text-gray-800 font-medium">New group</span>
+      </motion.div>
 
-      {/* Frequently Contacted Section */}
-      <div className="p-3 text-gray-500 text-sm">
+      {/* All Contacts Section */}
+      <motion.div 
+        className="p-2 sm:p-3 text-gray-600 text-xs sm:text-sm font-medium"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.3, delay: 0.4 }}
+      >
         All contacts
-
-      </div>
+      </motion.div>
         {contact.map((contact,index)=>(
-        <div key={index} onClick={()=>addchattedaccounts(contact._id)} className="flex items-center p-3 hover:bg-gray-100 cursor-pointer">
-          <div className="w-12 h-12 rounded-full mr-3 overflow-hidden">
+        <motion.div 
+          key={index} 
+          onClick={()=>addchattedaccounts(contact._id)} 
+          className="sidebar-item flex items-center p-2 sm:p-3 mx-1 sm:mx-2 my-1 rounded-xl glass-effect hover:bg-white/20 cursor-pointer transition-all duration-300"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3, delay: 0.5 + index * 0.1 }}
+          whileHover={{ scale: 1.02, x: 5 }}
+          whileTap={{ scale: 0.98 }}
+        >
+          <motion.div 
+            className="w-10 sm:w-12 h-10 sm:h-12 rounded-full mr-2 sm:mr-3 overflow-hidden ring-2 ring-white/30 shadow-lg"
+            whileHover={{ scale: 1.1 }}
+            transition={{ type: "spring", stiffness: 400, damping: 10 }}
+          >
             <img src={contact.profile} alt={contact.username} className="w-full h-full object-cover" />
-          </div>
+          </motion.div>
           <div className="flex flex-col flex-grow">
-            <span className="text-gray-800 font-medium">{contact.username}</span>
-            {contact.email && <span className="text-gray-500 text-sm">{contact.email}</span>}
+            <motion.span 
+              className="text-sm sm:text-base text-gray-800 font-medium"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.6 + index * 0.1 }}
+            >
+              {contact.username}
+            </motion.span>
+            {contact.email && 
+              <motion.span 
+                className="text-gray-600 text-xs sm:text-sm hidden sm:block"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.7 + index * 0.1 }}
+              >
+                {contact.email}
+              </motion.span>
+            }
           </div>
-          {index === 0 && <ChevronRight size={20} className="text-gray-500" />}
-        </div>
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.8 + index * 0.1 }}
+          >
+            <ChevronRight size={16} className="sm:w-5 sm:h-5 text-gray-500" />
+          </motion.div>
+        </motion.div>
       ))}
 
       
       {/* Footer */}
-      <div className="mt-auto p-4 text-center text-gray-500 text-sm">
-        Send and receive messages with WhatsApp
-      </div>
-    </div>
+      <motion.div 
+        className="mt-auto p-2 sm:p-4 text-center text-gray-600 text-xs sm:text-sm glass-effect rounded-b-2xl"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3, delay: 0.9 }}
+      >
+        Connect and chat with your contacts
+      </motion.div>
+    </motion.div>
   );
 };
 

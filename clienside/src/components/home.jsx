@@ -165,6 +165,7 @@ const HomePage = () => {
 
     const newImages = [];
     const newPreviews = [];
+    let processedCount = 0;
 
     files.forEach(file => {
       const reader = new FileReader();
@@ -172,13 +173,17 @@ const HomePage = () => {
       reader.onloadend = () => {
         newImages.push(reader.result);
         newPreviews.push(URL.createObjectURL(file));
+        processedCount++;
         
-        if (newImages.length === files.length) {
+        if (processedCount === files.length) {
           setSelectedImages(prev => [...prev, ...newImages]);
           setImagePreview(prev => [...prev, ...newPreviews]);
         }
       };
     });
+    
+    // Reset file input
+    e.target.value = '';
   };
 
   // Remove selected image
@@ -220,6 +225,10 @@ const HomePage = () => {
     setmessage("");
     setSelectedImages([]);
     setImagePreview([]);
+    
+    // Clear file input
+    const fileInput = document.getElementById('image-upload');
+    if (fileInput) fileInput.value = '';
     
     // Also emit stop typing event
     socket.emit("stop_typing", { from: userId, to: _id });

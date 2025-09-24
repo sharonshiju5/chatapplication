@@ -14,7 +14,7 @@ export async function addmsg(req,res) {
             to:_id,
             images,
             message,
-            Date: _id, 
+            Date: Date, 
         })
 
         res.status(201).send({msg:"message addded"})

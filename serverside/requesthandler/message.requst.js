@@ -6,6 +6,9 @@ export async function addmsg(req,res) {
     try {
         
         const{userId,_id,message,images,Date}=req.body
+        if (!(userId && _id && message)) {
+            return res.status(400).send({ msg: "messgage are empty" });
+        }
         await messageSchema.create({
             from:userId,
             to:_id,

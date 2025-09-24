@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { Search, X, Check, LogOut, Send, Paperclip, Mail, Phone, Edit, Smile } from 'lucide-react';
+import { Search, X, Check, LogOut, Send, Paperclip, Mail, Phone, Edit, Smile, Download } from 'lucide-react';
 import { Link, useNavigate } from "react-router-dom";
 import axios from 'axios';
 import { io } from "socket.io-client"; 
@@ -27,6 +27,8 @@ const HomePage = () => {
   const[search,setsearch]=useState("")
   const [selectedImages, setSelectedImages] = useState([]);
   const [imagePreview, setImagePreview] = useState([]);
+  const [fullscreenImage, setFullscreenImage] = useState(null);
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   // New state variables for socket functionality
   const [onlineUsers, setOnlineUsers] = useState([]);
   const [isTyping, setIsTyping] = useState(false);
@@ -286,6 +288,51 @@ const HomePage = () => {
       chatwith();
     }
   };
+
+  // Handle fullscreen image
+  const openFullscreen = (imageSrc) => {
+    setFullscreenImage(imageSrc);
+  };
+
+  const closeFullscreen = () => {
+    setFullscreenImage(null);
+  };
+
+  // Download image function
+  const downloadImage = (imageSrc) => {
+    const link = document.createElement('a');
+    link.href = imageSrc;
+    link.download = `chat-image-${Date.now()}.jpg`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  // Emoji data
+  const emojis = [
+    '😀', '😃', '😄', '😁', '😆', '😅', '😂', '🤣', '😊', '😇',
+    '🙂', '🙃', '😉', '😌', '😍', '🥰', '😘', '😗', '😙', '😚',
+    '😋', '😛', '😝', '😜', '🤪', '🤨', '🧐', '🤓', '😎', '🤩',
+    '🥳', '😏', '😒', '😞', '😔', '😟', '😕', '🙁', '☹️', '😣',
+    '😖', '😫', '😩', '🥺', '😢', '😭', '😤', '😠', '😡', '🤬',
+    '🤯', '😳', '🥵', '🥶', '😱', '😨', '😰', '😥', '😓', '🤗',
+    '🤔', '🤭', '🤫', '🤥', '😶', '😐', '😑', '😬', '🙄', '😯',
+    '😦', '😧', '😮', '😲', '🥱', '😴', '🤤', '😪', '😵', '🤐',
+    '🥴', '🤢', '🤮', '🤧', '😷', '🤒', '🤕', '🤑', '🤠', '😈',
+    '👍', '👎', '👌', '✌️', '🤞', '🤟', '🤘', '🤙', '👈', '👉',
+    '👆', '🖕', '👇', '☝️', '👋', '🤚', '🖐️', '✋', '🖖', '👏',
+    '🙌', '🤲', '🤝', '🙏', '✍️', '💅', '🤳', '💪', '🦾', '🦿',
+    '❤️', '🧡', '💛', '💚', '💙', '💜', '🖤', '🤍', '🤎', '💔',
+    '❣️', '💕', '💞', '💓', '💗', '💖', '💘', '💝', '💟', '☮️',
+    '✝️', '☪️', '🕉️', '☸️', '✡️', '🔯', '🕎', '☯️', '☦️', '🛐'
+  ];
+
+  // Add emoji to message
+  const addEmoji = (emoji) => {
+    setmessage(prev => prev + emoji);
+    setShowEmojiPicker(false);
+  };
+
 // console.log(formData);
 
   return (
@@ -612,7 +659,7 @@ const HomePage = () => {
                                   animate={{ opacity: 1, scale: 1 }}
                                   transition={{ duration: 0.4, delay: imgIndex * 0.1 }}
                                   whileHover={{ scale: 1.02 }}
-                                  onClick={() => window.open(image, '_blank')}
+                                  onClick={() => openFullscreen(image)}
                                 />
                               ))}
                             </div>
@@ -668,7 +715,7 @@ const HomePage = () => {
                                   animate={{ opacity: 1, scale: 1 }}
                                   transition={{ duration: 0.4, delay: imgIndex * 0.1 }}
                                   whileHover={{ scale: 1.02 }}
-                                  onClick={() => window.open(image, '_blank')}
+                                  onClick={() => openFullscreen(image)}
                                 />
                               ))}
                             </div>
@@ -775,13 +822,41 @@ const HomePage = () => {
                     value={message}
                     className="chat-input flex-1 border-0 outline-none px-2 sm:px-3 py-1 sm:py-2 text-xs sm:text-sm bg-transparent text-gray-800 placeholder-gray-500"
                   />
-                  <motion.button 
-                    className="p-1 sm:p-2 text-gray-500 hover:text-gray-700 transition-colors hidden sm:block"
-                    whileHover={{ scale: 1.1 }}
-                    whileTap={{ scale: 0.9 }}
-                  >
-                    <Smile className="w-4 sm:w-5 h-4 sm:h-5" />
-                  </motion.button>
+                  <div className="relative hidden sm:block">
+                    <motion.button 
+                      onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+                      className="p-1 sm:p-2 text-gray-500 hover:text-gray-700 transition-colors"
+                      whileHover={{ scale: 1.1 }}
+                      whileTap={{ scale: 0.9 }}
+                    >
+                      <Smile className="w-4 sm:w-5 h-4 sm:h-5" />
+                    </motion.button>
+                    
+                    {/* Emoji Picker */}
+                    {showEmojiPicker && (
+                      <motion.div
+                        className="absolute bottom-full right-0 mb-2 w-64 h-48 glass-effect rounded-xl p-3 shadow-xl border border-white/20 z-50"
+                        initial={{ opacity: 0, scale: 0.8, y: 10 }}
+                        animate={{ opacity: 1, scale: 1, y: 0 }}
+                        exit={{ opacity: 0, scale: 0.8, y: 10 }}
+                        transition={{ duration: 0.2 }}
+                      >
+                        <div className="grid grid-cols-8 gap-1 h-full overflow-y-auto custom-scrollbar">
+                          {emojis.map((emoji, index) => (
+                            <motion.button
+                              key={index}
+                              onClick={() => addEmoji(emoji)}
+                              className="text-lg hover:bg-white/20 rounded p-1 transition-colors"
+                              whileHover={{ scale: 1.2 }}
+                              whileTap={{ scale: 0.9 }}
+                            >
+                              {emoji}
+                            </motion.button>
+                          ))}
+                        </div>
+                      </motion.div>
+                    )}
+                  </div>
                     <motion.button 
                       onClick={chatwith} 
                       className="p-1 sm:p-2 gradient-primary rounded-full text-white hover:shadow-lg transition-all disabled:opacity-50"
@@ -813,6 +888,60 @@ const HomePage = () => {
           </div>
         }
       </div>
+      
+      {/* Click outside to close emoji picker */}
+      {showEmojiPicker && (
+        <div 
+          className="fixed inset-0 z-40" 
+          onClick={() => setShowEmojiPicker(false)}
+        />
+      )}
+      
+      {/* Fullscreen Image Modal */}
+      {fullscreenImage && (
+        <motion.div
+          className="fixed inset-0 bg-black/90 flex items-center justify-center z-50"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          onClick={closeFullscreen}
+        >
+          <motion.div
+            className="relative max-w-4xl max-h-full p-4"
+            initial={{ scale: 0.8, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            exit={{ scale: 0.8, opacity: 0 }}
+            transition={{ type: "spring", stiffness: 300, damping: 30 }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="absolute -top-2 -right-2 flex gap-2 z-10">
+              <motion.button
+                onClick={() => downloadImage(fullscreenImage)}
+                className="w-8 h-8 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center text-white"
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
+                title="Download image"
+              >
+                <Download size={16} />
+              </motion.button>
+              <motion.button
+                onClick={closeFullscreen}
+                className="w-8 h-8 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center text-white"
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
+                title="Close"
+              >
+                <X size={20} />
+              </motion.button>
+            </div>
+            <img
+              src={fullscreenImage}
+              alt="Fullscreen view"
+              className="max-w-full max-h-full object-contain rounded-lg"
+            />
+          </motion.div>
+        </motion.div>
+      )}
     </div>
   );
 };

@@ -25,6 +25,8 @@ const HomePage = () => {
   const [chater, setchatter] = useState();
   const [chats, setchats] = useState([]);
   const[search,setsearch]=useState("")
+  const [selectedImages, setSelectedImages] = useState([]);
+  const [imagePreview, setImagePreview] = useState([]);
   // New state variables for socket functionality
   const [onlineUsers, setOnlineUsers] = useState([]);
   const [isTyping, setIsTyping] = useState(false);
@@ -156,9 +158,39 @@ const HomePage = () => {
     navigate("/login");
   }
 
+  // Handle image upload
+  const handleImageUpload = (e) => {
+    const files = Array.from(e.target.files);
+    if (files.length === 0) return;
+
+    const newImages = [];
+    const newPreviews = [];
+
+    files.forEach(file => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onloadend = () => {
+        newImages.push(reader.result);
+        newPreviews.push(URL.createObjectURL(file));
+        
+        if (newImages.length === files.length) {
+          setSelectedImages(prev => [...prev, ...newImages]);
+          setImagePreview(prev => [...prev, ...newPreviews]);
+        }
+      };
+    });
+  };
+
+  // Remove selected image
+  const removeImage = (index) => {
+    setSelectedImages(prev => prev.filter((_, i) => i !== index));
+    setImagePreview(prev => prev.filter((_, i) => i !== index));
+  };
+
   // Send message using Socket.IO
   function chatwith() {
-    if (message.trim() === "" || !_id) return;
+    if (message.trim() === "" && selectedImages.length === 0) return;
+    if (!_id) return;
     
     // Check if socket is initialized
     if (!socket) {
@@ -170,20 +202,24 @@ const HomePage = () => {
     socket.emit("send_message", {
       from: userId,
       to: _id,
-      message: message
+      message: message,
+      images: selectedImages
     });
     
     // Optimistically add message to UI
     const newMessage = {
-      _id: Date.now().toString(), // Temporary ID
+      _id: Date.now().toString(),
       from: userId,
       to: _id,
       message: message,
+      images: selectedImages,
       timestamp: new Date()
     };
     
     setchats(prevChats => [...prevChats, newMessage]);
     setmessage("");
+    setSelectedImages([]);
+    setImagePreview([]);
     
     // Also emit stop typing event
     socket.emit("stop_typing", { from: userId, to: _id });
@@ -554,7 +590,24 @@ const HomePage = () => {
                           animate={{ opacity: 1, scale: 1, x: 0 }}
                           transition={{ duration: 0.3 }}
                         >
-                          <p className="text-xs sm:text-sm">{chat.message}</p>
+                          {chat.message && <p className="text-xs sm:text-sm mb-2">{chat.message}</p>}
+                          {chat.images && chat.images.length > 0 && (
+                            <div className="space-y-2">
+                              {chat.images.map((image, imgIndex) => (
+                                <motion.img
+                                  key={imgIndex}
+                                  src={image}
+                                  alt="Shared image"
+                                  className="w-full max-w-48 rounded-lg cursor-pointer hover:opacity-90 transition-opacity"
+                                  initial={{ opacity: 0, scale: 0.8 }}
+                                  animate={{ opacity: 1, scale: 1 }}
+                                  transition={{ duration: 0.4, delay: imgIndex * 0.1 }}
+                                  whileHover={{ scale: 1.02 }}
+                                  onClick={() => window.open(image, '_blank')}
+                                />
+                              ))}
+                            </div>
+                          )}
                         </motion.div>
                         <span className="text-xs text-gray-500">
                           {new Date(chat.Date).toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' })}<br></br>
@@ -593,7 +646,24 @@ const HomePage = () => {
                           animate={{ opacity: 1, scale: 1, x: 0 }}
                           transition={{ duration: 0.3 }}
                         >
-                          <p className="text-xs sm:text-sm text-gray-800">{chat.message}</p>
+                          {chat.message && <p className="text-xs sm:text-sm text-gray-800 mb-2">{chat.message}</p>}
+                          {chat.images && chat.images.length > 0 && (
+                            <div className="space-y-2">
+                              {chat.images.map((image, imgIndex) => (
+                                <motion.img
+                                  key={imgIndex}
+                                  src={image}
+                                  alt="Shared image"
+                                  className="w-full max-w-48 rounded-lg cursor-pointer hover:opacity-90 transition-opacity"
+                                  initial={{ opacity: 0, scale: 0.8 }}
+                                  animate={{ opacity: 1, scale: 1 }}
+                                  transition={{ duration: 0.4, delay: imgIndex * 0.1 }}
+                                  whileHover={{ scale: 1.02 }}
+                                  onClick={() => window.open(image, '_blank')}
+                                />
+                              ))}
+                            </div>
+                          )}
                         </motion.div>
                         <span className="text-xs text-gray-500">
                           {new Date(chat.Date).toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' })}<br></br>
@@ -636,14 +706,58 @@ const HomePage = () => {
               transition={{ duration: 0.3, delay: 0.2 }}
             >
               {_id ? (
-                <div className="flex items-center">
-                  <motion.button 
-                    className="p-1 sm:p-2 text-gray-500 hover:text-gray-700 transition-colors"
-                    whileHover={{ scale: 1.1 }}
-                    whileTap={{ scale: 0.9 }}
-                  >
-                    <Paperclip  className="w-4 sm:w-5 h-4 sm:h-5" />
-                  </motion.button>
+                <div className="flex flex-col">
+                  {/* Image Preview */}
+                  {imagePreview.length > 0 && (
+                    <motion.div 
+                      className="flex flex-wrap gap-2 p-2 mb-2 glass-effect rounded-xl"
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.3 }}
+                    >
+                      {imagePreview.map((preview, index) => (
+                        <motion.div 
+                          key={index}
+                          className="relative"
+                          initial={{ opacity: 0, scale: 0.8 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          transition={{ duration: 0.3, delay: index * 0.1 }}
+                        >
+                          <img 
+                            src={preview} 
+                            alt="Preview" 
+                            className="w-16 h-16 object-cover rounded-lg" 
+                          />
+                          <motion.button
+                            onClick={() => removeImage(index)}
+                            className="absolute -top-2 -right-2 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center text-xs"
+                            whileHover={{ scale: 1.1 }}
+                            whileTap={{ scale: 0.9 }}
+                          >
+                            ×
+                          </motion.button>
+                        </motion.div>
+                      ))}
+                    </motion.div>
+                  )}
+                  
+                  <div className="flex items-center">
+                    <motion.label 
+                      htmlFor="image-upload"
+                      className="p-1 sm:p-2 text-gray-500 hover:text-gray-700 transition-colors cursor-pointer"
+                      whileHover={{ scale: 1.1 }}
+                      whileTap={{ scale: 0.9 }}
+                    >
+                      <Paperclip className="w-4 sm:w-5 h-4 sm:h-5" />
+                      <input
+                        id="image-upload"
+                        type="file"
+                        multiple
+                        accept="image/*"
+                        onChange={handleImageUpload}
+                        className="hidden"
+                      />
+                    </motion.label>
                   <input
                     type="text"
                     placeholder="Type your message"
@@ -659,15 +773,16 @@ const HomePage = () => {
                   >
                     <Smile className="w-4 sm:w-5 h-4 sm:h-5" />
                   </motion.button>
-                  <motion.button 
-                    onClick={chatwith} 
-                    className="p-1 sm:p-2 gradient-primary rounded-full text-white hover:shadow-lg transition-all disabled:opacity-50"
-                    disabled={!message.trim()}
-                    whileHover={{ scale: 1.1 }}
-                    whileTap={{ scale: 0.9 }}
-                  >
-                    <Send className="w-4 sm:w-5 h-4 sm:h-5" />
-                  </motion.button>
+                    <motion.button 
+                      onClick={chatwith} 
+                      className="p-1 sm:p-2 gradient-primary rounded-full text-white hover:shadow-lg transition-all disabled:opacity-50"
+                      disabled={!message.trim() && selectedImages.length === 0}
+                      whileHover={{ scale: 1.1 }}
+                      whileTap={{ scale: 0.9 }}
+                    >
+                      <Send className="w-4 sm:w-5 h-4 sm:h-5" />
+                    </motion.button>
+                  </div>
                 </div>
               ) : (
                 <motion.div 

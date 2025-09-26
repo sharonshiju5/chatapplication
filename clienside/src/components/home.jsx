@@ -5,6 +5,7 @@ import axios from 'axios';
 import { io } from "socket.io-client"; 
 import APIURL from './path';
 import Newcontact from './newcontaact';
+import Loader from './Loader';
 import { motion } from "framer-motion";
 
 // Create a socket reference outside the component
@@ -29,6 +30,13 @@ const HomePage = () => {
   const [imagePreview, setImagePreview] = useState([]);
   const [fullscreenImage, setFullscreenImage] = useState(null);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const [loading, setLoading] = useState({
+    user: true,
+    contacts: true,
+    messages: false,
+    sending: false
+  });
+  const [messageCounts, setMessageCounts] = useState({});
   // New state variables for socket functionality
   const [onlineUsers, setOnlineUsers] = useState([]);
   const [isTyping, setIsTyping] = useState(false);
@@ -62,6 +70,13 @@ const HomePage = () => {
       // Handle incoming messages
       socket.on("receive_message", (newMessage) => {
         setchats(prevChats => [...prevChats, newMessage]);
+        // Update message count if not in current chat
+        if (newMessage.from !== _id) {
+          setMessageCounts(prev => ({
+            ...prev,
+            [newMessage.from]: (prev[newMessage.from] || 0) + 1
+          }));
+        }
       });
       
       // Handle message sent confirmation
@@ -119,6 +134,7 @@ const HomePage = () => {
   // Fetch user data
   async function fetchuser() {
     try {
+      setLoading(prev => ({ ...prev, user: true }));
       const res = await axios.post(APIURL + "/fetchuser", { userId });
       if (res.status = 200) {
         const { user } = res.data;
@@ -126,6 +142,8 @@ const HomePage = () => {
       }
     } catch (error) {
       console.log(error);
+    } finally {
+      setLoading(prev => ({ ...prev, user: false }));
     }
   }
   
@@ -136,8 +154,7 @@ const HomePage = () => {
   // Fetch chatted accounts
   async function fetchchattedaccount() {
     try {
-      console.log(search);
-      
+      setLoading(prev => ({ ...prev, contacts: true }));
       const res = await axios.post(APIURL + "/fetchchats", { userId,search });
       if (res.status = 200) {
         const { chats } = res.data;
@@ -145,6 +162,8 @@ const HomePage = () => {
       }
     } catch (error) {
       console.log(error);
+    } finally {
+      setLoading(prev => ({ ...prev, contacts: false }));
     }
   }
   
@@ -205,6 +224,8 @@ const HomePage = () => {
       return;
     }
     
+    setLoading(prev => ({ ...prev, sending: true }));
+    
     // Emit message via socket
     socket.emit("send_message", {
       from: userId,
@@ -234,6 +255,10 @@ const HomePage = () => {
     
     // Also emit stop typing event
     socket.emit("stop_typing", { from: userId, to: _id });
+    
+    setTimeout(() => {
+      setLoading(prev => ({ ...prev, sending: false }));
+    }, 500);
   }
 
   // Handle typing indicator
@@ -265,6 +290,7 @@ const HomePage = () => {
     if (!_id) return;
     
     try {
+      setLoading(prev => ({ ...prev, messages: true }));
       const res = await axios.post(APIURL + "/fetchmessage", { userId, _id });
       if (res.status = 200) {
         const { chats } = res.data;
@@ -272,6 +298,8 @@ const HomePage = () => {
       }
     } catch (error) {
       console.log(error);
+    } finally {
+      setLoading(prev => ({ ...prev, messages: false }));
     }
   }
   
@@ -375,7 +403,9 @@ const HomePage = () => {
         
         {/* Scrollable Conversation List */}
         <div className="overflow-y-auto flex-1 custom-scrollbar">
-          {profil ? 
+          {loading.user ? (
+            <Loader size="lg" text="Loading profile..." />
+          ) : profil ? 
             <motion.div 
               className="h-full p-4"
               initial={{ opacity: 0, x: -20 }}
@@ -502,10 +532,22 @@ const HomePage = () => {
                 </motion.button>
               </div>
               
-              {accounts.map((account, index) => (
-                <motion.div 
+              {loading.contacts ? (
+                <Loader size="md" text="Loading contacts..." />
+              ) : accounts.length === 0 ? (
+                <div className="text-center text-gray-500 p-8">
+                  <p>No contacts found</p>
+                </div>
+              ) : (
+                accounts.map((account, index) => (
+                  <motion.div 
                 key={index} 
-                onClick={() => {setid(account._id); setchatter(account)}}
+                onClick={() => {
+                  setid(account._id); 
+                  setchatter(account);
+                  // Clear message count for this contact
+                  setMessageCounts(prev => ({ ...prev, [account._id]: 0 }));
+                }}
                 className="sidebar-item flex items-center p-2 sm:p-3 border-b border-white/10 glass-effect hover:bg-white/20 cursor-pointer transition-all duration-300 mx-1 sm:mx-2 my-1 rounded-xl"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -525,6 +567,17 @@ const HomePage = () => {
                   {/* Online indicator */}
                   {onlineUsers.includes(account._id) && (
                     <span className="online-indicator absolute bottom-0 right-0 w-3 h-3 bg-green-400 border-2 border-white rounded-full"></span>
+                  )}
+                  {/* Message Count Badge */}
+                  {messageCounts[account._id] > 0 && (
+                    <motion.div
+                      className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center font-bold"
+                      initial={{ scale: 0 }}
+                      animate={{ scale: 1 }}
+                      transition={{ type: "spring", stiffness: 500 }}
+                    >
+                      {messageCounts[account._id] > 9 ? '9+' : messageCounts[account._id]}
+                    </motion.div>
                   )}
                 </div>
                 <motion.div 
@@ -564,8 +617,20 @@ const HomePage = () => {
                     {account.email}
                   </motion.p>
                 </motion.div>
+                {/* Message Count Badge */}
+                {messageCounts[account._id] > 0 && (
+                  <motion.div
+                    className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center font-bold"
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    transition={{ type: "spring", stiffness: 500 }}
+                  >
+                    {messageCounts[account._id] > 9 ? '9+' : messageCounts[account._id]}
+                  </motion.div>
+                )}
               </motion.div>
-              ))}
+                ))
+              )}
             </div>
           }
         </div>
@@ -629,7 +694,15 @@ const HomePage = () => {
             
             {/* Messages area - scrollable */}
             <div className="flex-1 overflow-y-auto p-2 sm:p-4 custom-scrollbar">
-              { chats && chats.map((chat, index) => (
+              {chats && chats.length === 0 ? (
+                <div className="flex items-center justify-center h-full">
+                  <div className="text-center text-gray-500">
+                    <p className="text-lg">No messages yet</p>
+                    <p className="text-sm">Start the conversation!</p>
+                  </div>
+                </div>
+              ) : (
+                chats && chats.map((chat, index) => (
                 chat.from === userId ? (
                   <motion.div
                     key={index}
@@ -729,7 +802,8 @@ const HomePage = () => {
                     </div>
                   </motion.div>
                 )
-              ))}
+                ))
+              )}
               
               {/* Typing indicator */}
               {_id && typingUsers[_id] && (
@@ -859,12 +933,20 @@ const HomePage = () => {
                   </div>
                     <motion.button 
                       onClick={chatwith} 
-                      className="p-1 sm:p-2 gradient-primary rounded-full text-white hover:shadow-lg transition-all disabled:opacity-50"
-                      disabled={!message.trim() && selectedImages.length === 0}
-                      whileHover={{ scale: 1.1 }}
-                      whileTap={{ scale: 0.9 }}
+                      className="p-1 sm:p-2 gradient-primary rounded-full text-white hover:shadow-lg transition-all disabled:opacity-50 flex items-center justify-center"
+                      disabled={!message.trim() && selectedImages.length === 0 || loading.sending}
+                      whileHover={{ scale: loading.sending ? 1 : 1.1 }}
+                      whileTap={{ scale: loading.sending ? 1 : 0.9 }}
                     >
-                      <Send className="w-4 sm:w-5 h-4 sm:h-5" />
+                      {loading.sending ? (
+                        <motion.div
+                          className="w-4 h-4 border-2 border-purple-300/50 border-t-purple-200 rounded-full"
+                          animate={{ rotate: 360 }}
+                          transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                        />
+                      ) : (
+                        <Send className="w-4 sm:w-5 h-4 sm:h-5" />
+                      )}
                     </motion.button>
                   </div>
                 </div>

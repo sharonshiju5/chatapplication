@@ -3,15 +3,17 @@ import { Search, Users, ChevronRight } from 'lucide-react';
 import { motion } from 'framer-motion';
 import axios from 'axios';
 import APIURL from './path';
+import Loader from './Loader';
 
 const Newcontact = () => {
     const[contact,setcontact]=useState([])
-
+    const[loading,setLoading]=useState(true)
     const[search,setsearch]=useState("")
     const userId=localStorage.getItem("userId")
 
     async function viewusers() {
         try {
+          setLoading(true)
           const res=await axios.post(APIURL+"/viewusers",{search,userId})
         //   console.log(res);
           if (res.status=200) {
@@ -21,6 +23,8 @@ const Newcontact = () => {
           
         } catch (error) {
           
+        } finally {
+          setLoading(false)
         }
       }
     useEffect(()=>{
@@ -121,7 +125,15 @@ const Newcontact = () => {
       >
         All contacts
       </motion.div>
-        {contact.map((contact,index)=>(
+      
+      {loading ? (
+        <Loader size="md" text="Loading contacts..." />
+      ) : contact.length === 0 ? (
+        <div className="text-center text-gray-500 p-8">
+          <p>No contacts found</p>
+        </div>
+      ) : (
+        contact.map((contact,index)=>(
         <motion.div 
           key={index} 
           onClick={()=>addchattedaccounts(contact._id)} 
@@ -167,7 +179,8 @@ const Newcontact = () => {
             <ChevronRight size={16} className="sm:w-5 sm:h-5 text-gray-500" />
           </motion.div>
         </motion.div>
-      ))}
+        ))
+      )}
 
       
       {/* Footer */}

@@ -5,6 +5,7 @@ import { motion } from 'framer-motion';
 import axios from "axios"
 import APIURL from "./path"
 import { ToastContainer, toast } from 'react-toastify';
+import Loader from './Loader';
 
 // Login Component
 const Login = () => {
@@ -15,6 +16,7 @@ const Login = () => {
     password: ''
   });
   const [errors, setErrors] = useState({});
+  const [loading, setLoading] = useState(false);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -48,7 +50,10 @@ const Login = () => {
 
   const handleLogin = async(e) => {
     e.preventDefault();
+    if (!validateLoginForm()) return;
+    
     try {
+      setLoading(true);
       const res=await axios.post(APIURL+"/login",formData)
       console.log(res);
       const{token,userId}=res.data
@@ -83,6 +88,8 @@ const Login = () => {
         progress: undefined,
         theme: "light",
       });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -204,11 +211,23 @@ const Login = () => {
           >
             <motion.button
               type="submit"
-              className="w-full flex justify-center py-3 px-4 border border-transparent rounded-xl shadow-lg text-sm font-medium text-white gradient-primary hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all animate-glow"
-              whileHover={{ scale: 1.02, y: -2 }}
-              whileTap={{ scale: 0.98 }}
+              disabled={loading}
+              className="w-full flex justify-center py-3 px-4 border border-transparent rounded-xl shadow-lg text-sm font-medium text-white gradient-primary hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all animate-glow disabled:opacity-50"
+              whileHover={{ scale: loading ? 1 : 1.02, y: loading ? 0 : -2 }}
+              whileTap={{ scale: loading ? 1 : 0.98 }}
             >
-              Sign In
+              {loading ? (
+                <div className="flex items-center space-x-2">
+                  <motion.div
+                    className="w-4 h-4 border-2 border-purple-300/50 border-t-purple-200 rounded-full"
+                    animate={{ rotate: 360 }}
+                    transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                  />
+                  <span>Signing In...</span>
+                </div>
+              ) : (
+                'Sign In'
+              )}
             </motion.button>
           </motion.div>
         </motion.form>

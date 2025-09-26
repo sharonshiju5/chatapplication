@@ -5,6 +5,7 @@ import axios from 'axios';
 import APIURL from './path';
 import { Link,useNavigate } from "react-router-dom";
 import { ToastContainer, toast } from 'react-toastify';
+import Loader from './Loader';
 
 const Register = () => {
   const navigate=useNavigate()
@@ -20,6 +21,7 @@ const Register = () => {
     cpassword: ''
   });
   const [errors, setErrors] = useState({});
+  const [loading, setLoading] = useState(false);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -36,6 +38,7 @@ const Register = () => {
     console.log(formData);
     
     try {
+      setLoading(true);
       const res=await axios.post(APIURL+"/adduser",formData)
       console.log(res);
       if (res.status=201) {
@@ -69,6 +72,8 @@ const Register = () => {
         theme: "light",
         });
       
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -351,11 +356,23 @@ const Register = () => {
           >
             <motion.button
               type="submit"
-              className="w-full flex justify-center py-2 px-4 border border-transparent rounded-xl shadow-lg text-sm font-medium text-white gradient-primary hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all animate-glow"
-              whileHover={{ scale: 1.02, y: -2 }}
-              whileTap={{ scale: 0.98 }}
+              disabled={loading}
+              className="w-full flex justify-center py-2 px-4 border border-transparent rounded-xl shadow-lg text-sm font-medium text-white gradient-primary hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all animate-glow disabled:opacity-50"
+              whileHover={{ scale: loading ? 1 : 1.02, y: loading ? 0 : -2 }}
+              whileTap={{ scale: loading ? 1 : 0.98 }}
             >
-              Create Account
+              {loading ? (
+                <div className="flex items-center space-x-2">
+                  <motion.div
+                    className="w-4 h-4 border-2 border-purple-300/50 border-t-purple-200 rounded-full"
+                    animate={{ rotate: 360 }}
+                    transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                  />
+                  <span>Creating Account...</span>
+                </div>
+              ) : (
+                'Create Account'
+              )}
             </motion.button>
           </motion.div>
         </motion.form>

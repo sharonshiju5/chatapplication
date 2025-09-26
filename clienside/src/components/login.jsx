@@ -158,7 +158,7 @@ const Login = () => {
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.5 }}
-          >
+          > 
             <label htmlFor="password" className="block text-sm font-medium text-gray-700">
               Password
             </label>

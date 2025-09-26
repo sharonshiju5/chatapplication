@@ -8,7 +8,7 @@ const Loader = ({ size = 'md', text = 'Loading...' }) => {
     lg: 'w-12 h-12',
     xl: 'w-16 h-16'
   };
-
+ 
   return (
     <div className="flex flex-col items-center justify-center p-4">
       <motion.div

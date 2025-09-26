@@ -132,7 +132,7 @@ const Newcontact = () => {
         <div className="text-center text-gray-500 p-8">
           <p>No contacts found</p>
         </div>
-      ) : ( 
+      ) : (
         contact.map((contact,index)=>(
         <motion.div 
           key={index} 
